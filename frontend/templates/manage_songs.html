@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block title %}Manage Songs{% endblock %}
+
+{% block content %}
+   <h2>Manage Songs</h2>
+   <p>Playlist: {{ playlist.name }}</p>
+   <form method="POST" action="{{ url_for('manage_songs', playlist_id=playlist.id) }}">
+       {{ form.hidden_tag() }}
+       <div>
+           {{ form.title.label }} {{ form.title(class="form-control") }}
+       </div>
+       <div>
+           {{ form.artist.label }} {{ form.artist(class="form-control") }}
+       </div>
+       <div>
+           {{ form.submit(class="btn btn-primary") }}
+       </div>
+   </form>
+   <hr>
+   <h3>Songs in Playlist</h3>
+   <ul>
+       {% for song in playlist. Songs %}
+           <li>{{ song.title }} - {{ song.artist }}</li>
+       {% endfor %}
+   </ul>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block title %}Music Preferences{% endblock %}
+
+{% block content %}
+   <h2>Music Preferences</h2>
+   <form method="POST" action="{{ url_for('music_preferences') }}">
+       {{ form.hidden_tag() }}
+       <div>
+           {{ form.favorite_genres.label }} {{ form.favorite_genres(class="form-control") }}
+           {% for error in form.favorite_genres.errors %}
+               <span style="color: red;">{{ error }}</span>
+           {% endfor %}
+       </div>
+       <div>
+           {{ form.favorite_artists.label }} {{ form.favorite_artists(class="form-control") }}
+           {% for error in form.favorite_artists.errors %}
+               <span style="color: red;">{{ error }}</span>
+           {% endfor %}
+       </div>
+       <div>
+           {{ form.moods.label }} {{ form.moods(class="form-control") }}
+           {% for error in form.moods.errors %}
+               <span style="color: red;">{{ error }}</span>
+           {% endfor %}
+       </div>
+       <!-- Add more fields as needed -->
+
+       <div>
+           {{ form.submit(class="btn btn-primary") }}
+       </div>
+   </form>
