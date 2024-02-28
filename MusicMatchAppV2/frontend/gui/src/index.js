@@ -26,6 +26,8 @@ import Registration from "./components/Registration";
 import Login from "./components/Login";
 import Home from "./components/Home";
 import { AuthProvider } from './components/AuthContext';
+import ProfileUpdate from "./components/ProfileUpdate";
+import MusicPreference from "./components/MusicPreference";
 
 ReactDOM.render(
   <React.StrictMode>
@@ -36,6 +38,8 @@ ReactDOM.render(
         <Route path="/Registration" element={<Registration />} />
            <Route path="/Login" element={<Login />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/profile/update" element={ <ProfileUpdate />} />
+          <Route path="/MusicPreference" element={ <MusicPreference />} />
       </Routes>
         </AuthProvider>
     </Router>

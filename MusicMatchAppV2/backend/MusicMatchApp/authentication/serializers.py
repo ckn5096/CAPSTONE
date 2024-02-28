@@ -53,3 +53,31 @@ class LoginSerializer(serializers.Serializer):
         if not user or not user.is_active:
             raise serializers.ValidationError("Incorrect credentials")
         return user
+
+class ProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+       # fields = ['username', 'email', 'first_name', 'last_name']  # Add fields that can be updated
+        fields = ['username']  # Add fields that can be updated
+
+    def validate_username(self, value):
+        """
+        Check if the username is unique, excluding the current user.
+        """
+        user = self.context['request'].user
+        if User.objects.exclude(pk=user.pk).filter(username=value).exists():
+            raise serializers.ValidationError("This username is already in use.")
+        return value
+
+    def update(self, instance, validated_data):
+        """
+        Update the user profile with the validated data.
+        """
+        instance.username = validated_data.get('username', instance.username)
+        #instance.password = validated_data.get('password', instance.password)
+        #instance.email = validated_data.get('email', instance.email)
+        #instance.first_name = validated_data.get('first_name', instance.first_name)
+        #instance.last_name = validated_data.get('last_name', instance.last_name)
+        #instance.profile_picture = validated_data.get('profile_picture', instance.profile_picture)
+        instance.save()
+        return instance

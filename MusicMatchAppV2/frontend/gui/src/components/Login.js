@@ -6,6 +6,7 @@ import { useAuth } from './AuthContext';
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
      const { login } = useAuth();
 
@@ -26,6 +27,8 @@ const Login = () => {
              navigate(response.data.redirect_url);
         } catch (error) {
             console.error('Login failed:', error.response.data);
+            setErrorMessage('Invalid username or password. Please try again.');
+
         }
     };
 
@@ -34,6 +37,7 @@ const Login = () => {
             <input type="text" placeholder="Username" onChange={(e) => setUsername(e.target.value)} />
             <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
             <button onClick={handleLogin}>Login</button>
+            {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
         </div>
     );
 };
