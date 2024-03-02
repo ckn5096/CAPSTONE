@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
 import {useNavigate} from "react-router-dom";
+import './ProfileUpdate.css';
 
 const ProfileUpdate = () => {
     const [newUsername, setNewUsername] = useState('');
@@ -45,8 +46,8 @@ const ProfileUpdate = () => {
 
 
 
-    return (
-        <div>
+     return (
+        <div className="container"> {/* Add container class */}
             <h2>Update Profile</h2>
             <input type="text" placeholder="New Username" value={newUsername} onChange={(e) => setNewUsername(e.target.value)} />
             <input type="password" placeholder="New Password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
@@ -54,8 +55,7 @@ const ProfileUpdate = () => {
             <input type="text" placeholder="New Last Name" value={newLastname} onChange={(e) => setNewLastname(e.target.value)} />
             <input type="text" placeholder="New Email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} />
             <button onClick={handleUpdateProfile}>Update Profile</button>
-
-             <button onClick={handleSignOut}>Sign Out</button>
+            <button onClick={() => navigate('/home')}>Home</button> {/* Add Home button */}
         </div>
     );
 };

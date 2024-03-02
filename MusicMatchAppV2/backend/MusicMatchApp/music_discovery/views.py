@@ -153,7 +153,7 @@ class UserPlaylistsView(APIView):
             playlists_data.append(playlist_data)
         return Response(playlists_data, status=status.HTTP_200_OK)
 
-   
+
 
     def delete(self, request):
         playlist_user = Playlist.objects.get(user=request.user)

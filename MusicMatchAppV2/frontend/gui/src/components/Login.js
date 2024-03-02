@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
+import './Login.css';
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -33,11 +34,17 @@ const Login = () => {
     };
 
     return (
-        <div>
-            <input type="text" placeholder="Username" onChange={(e) => setUsername(e.target.value)} />
-            <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
-            <button onClick={handleLogin}>Login</button>
-            {errorMessage && <div style={{ color: 'red' }}>{errorMessage}</div>}
+        <div className="login-container"> {/* Apply login container class */}
+            <div className="login-form"> {/* Apply login form class */}
+                <h1>Log In</h1>
+                <input type="text" placeholder="Username" onChange={(e) => setUsername(e.target.value)} />
+                <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
+                <button onClick={handleLogin}>Login</button>
+                {errorMessage && <div className="error-message">{errorMessage}</div>}
+                <div className="signup-link"> {/* Apply signup link class */}
+                    <p>Need an account? <Link to="/registration">Sign up</Link></p>
+                </div>
+            </div>
         </div>
     );
 };

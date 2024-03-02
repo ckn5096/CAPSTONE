@@ -154,12 +154,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
+import './MusicPreference.css';
 
 const apiUrl = 'http://127.0.0.1:8000/MusicPreference/'; // Base URL for your API
 const playlistUrl = 'http://127.0.0.1:8000/UserPlaylist/'; // URL for fetching playlists
 
 const MusicPreferences = () => {
-    const { authToken, logout } = useAuth();
+    const {authToken, logout} = useAuth();
     const [preferences, setPreferences] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -175,7 +176,7 @@ const MusicPreferences = () => {
     const handleSignOut = () => {
         // Access the logout function from useAuth hook
         logout();
-        navigate('/', { replace: true });
+        navigate('/', {replace: true});
     };
 
     // Function to fetch preferences
@@ -194,7 +195,7 @@ const MusicPreferences = () => {
         }
     };
 
-     // Function to fetch user's playlist
+    // Function to fetch user's playlist
     const fetchUserPlaylist = async () => {
         try {
             const response = await axios.get(playlistUrl, {
@@ -217,46 +218,45 @@ const MusicPreferences = () => {
         }
     }, [authToken]);
 
- const handleSubmit = async (event) => {
-    event.preventDefault();
-    try {
-        // Create or update the music preference
-        await axios.post(apiUrl, newPreference, {
-            headers: {
-                Authorization: `Bearer ${authToken}`,
-                'Content-Type': 'application/json',
-            },
-        });
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        try {
+            // Create or update the music preference
+            await axios.post(apiUrl, newPreference, {
+                headers: {
+                    Authorization: `Bearer ${authToken}`,
+                    'Content-Type': 'application/json',
+                },
+            });
 
-        // Generate playlist
-        await axios.post('http://127.0.0.1:8000/generate_playlist/', newPreference, {  // Send null instead of newPreference
-            headers: {
-                Authorization: `Bearer ${authToken}`,
-                'Content-Type': 'application/json',
-            },
-        });
+            // Generate playlist
+            await axios.post('http://127.0.0.1:8000/generate_playlist/', newPreference, {  // Send null instead of newPreference
+                headers: {
+                    Authorization: `Bearer ${authToken}`,
+                    'Content-Type': 'application/json',
+                },
+            });
 
-        // Fetch recommended songs
-        const response = await axios.get(playlistUrl, {
-            headers: {
-                Authorization: `Bearer ${authToken}`,
-            },
-        });
-        console.log('Recommended Songs Response:', response.data); // Debugging log
-        setRecommendedSongs(response.data);
+            // Fetch recommended songs
+            const response = await axios.get(playlistUrl, {
+                headers: {
+                    Authorization: `Bearer ${authToken}`,
+                },
+            });
+            console.log('Recommended Songs Response:', response.data); // Debugging log
+            setRecommendedSongs(response.data);
 
-        // Refresh preferences after creating a new one
-        fetchPreferences();
-        setNewPreference({
-            favorite_genre: '',
-            favorite_artist: '',
-            favorite_song: ''
-        });
-    } catch (error) {
-        setError(error.response.data);
-    }
-};
-
+            // Refresh preferences after creating a new one
+            fetchPreferences();
+            setNewPreference({
+                favorite_genre: '',
+                favorite_artist: '',
+                favorite_song: ''
+            });
+        } catch (error) {
+            setError(error.response.data);
+        }
+    };
 
 
     const handleDeletePreference = async () => {
@@ -273,7 +273,7 @@ const MusicPreferences = () => {
         }
     };
 
-     const handleDeletePlaylist = async (playlistName) => {
+    const handleDeletePlaylist = async (playlistName) => {
         try {
             await axios.delete(playlistUrl, {
                 headers: {
@@ -289,19 +289,86 @@ const MusicPreferences = () => {
     };
 
     const handleChange = (event) => {
-        const { name, value } = event.target;
+        const {name, value} = event.target;
         setNewPreference({
             ...newPreference,
             [name]: value
         });
     };
 
+//     return (
+//         <div>
+//             {loading && <p>Loading...</p>}
+//             {error && <p>Error: {error}</p>}
+//             {preferences && (
+//                 <div>
+//                     <h2>Your Music Preferences</h2>
+//                     <ul>
+//                         <li>Favorite Genre: {preferences.favorite_genre}</li>
+//                         <li>Favorite Artist: {preferences.favorite_artist}</li>
+//                         <li>Favorite Song: {preferences.favorite_song}</li>
+//                     </ul>
+//                     <button onClick={handleDeletePreference}>Delete Preferences</button>
+//                 </div>
+//             )}
+//
+//              {/* Display user's playlist */}
+//             {userPlaylist && userPlaylist.length > 0 && (
+//             <div>
+//                 <h2>Your Playlist</h2>
+//                 <ul>
+//                     {userPlaylist.map((playlist, index) => (
+//                         <div key={index}>
+//                             <h3>{playlist.name}</h3>
+//                             <ul>
+//                                 {playlist.tracks.map((track, trackIndex) => (
+//                                     <li key={trackIndex}>{track.name} - {track.artist}</li>
+//                                 ))}
+//                             </ul>
+//                         </div>
+//                     ))}
+//                 </ul>
+//                 {/* Optionally, you can add a button to delete the playlist */}
+//                  <button onClick={handleDeletePlaylist}>Delete Playlist</button>
+//             </div>
+//         )}
+//
+//         {/*    {recommendedSongs.length > 0 && (*/}
+//         {/*    <div>*/}
+//         {/*        <h2>Recommended Songs</h2>*/}
+//         {/*        {recommendedSongs.map((playlist, index) => (*/}
+//         {/*            <div key={index}>*/}
+//         {/*                <h3>{playlist.name}</h3>*/}
+//         {/*                <ul>*/}
+//         {/*                    {playlist.tracks.map((track, trackIndex) => (*/}
+//         {/*                        <li key={trackIndex}>{track.name} - {track.artist}</li>*/}
+//         {/*                    ))}*/}
+//         {/*                </ul>*/}
+//         {/*            </div>*/}
+//         {/*        ))}*/}
+//         {/*    </div>*/}
+//         {/*)}*/}
+//
+//             <h2>Create New Preferences</h2>
+//             <form onSubmit={handleSubmit}>
+//                 <input type="text" placeholder="Favorite Genre" name="favorite_genre" value={newPreference.favorite_genre} onChange={handleChange} />
+//                 <input type="text" placeholder="Favorite Artist" name="favorite_artist" value={newPreference.favorite_artist} onChange={handleChange} />
+//                 <input type="text" placeholder="Favorite Song" name="favorite_song" value={newPreference.favorite_song} onChange={handleChange} />
+//                 <button type="submit">Save Preferences and Generate Playlist</button>
+//             </form>
+//
+//             <button onClick={handleSignOut}>Sign Out</button>
+//         </div>
+//     );
+// };
+
+
     return (
-        <div>
-            {loading && <p>Loading...</p>}
-            {error && <p>Error: {error}</p>}
+        <div className="container">
+            {loading && <p className="loading">Loading...</p>}
+            {error && <p className="error">Error: {error}</p>}
             {preferences && (
-                <div>
+                <div className="preferences">
                     <h2>Your Music Preferences</h2>
                     <ul>
                         <li>Favorite Genre: {preferences.favorite_genre}</li>
@@ -312,50 +379,63 @@ const MusicPreferences = () => {
                 </div>
             )}
 
-             {/* Display user's playlist */}
+            {/*{userPlaylist && userPlaylist.length > 0 && (*/}
+            {/*    <div className="playlist">*/}
+            {/*        <h2>Your Playlist</h2>*/}
+            {/*        <ul>*/}
+            {/*            {userPlaylist.map((playlist, index) => (*/}
+            {/*                <div key={index}>*/}
+            {/*                    <h3 className="playlist-name">{playlist.name}</h3>*/}
+            {/*                    <ul className="playlist-tracks">*/}
+            {/*                        {playlist.tracks.map((track, trackIndex) => (*/}
+            {/*                            <li key={trackIndex} className="playlist-track">*/}
+            {/*                                <span className="playlist-track-name">{track.name}</span> - <span*/}
+            {/*                                className="playlist-track-artist">{track.artist}</span>*/}
+            {/*                            </li>*/}
+            {/*                        ))}*/}
+            {/*                    </ul>*/}
+            {/*                </div>*/}
+            {/*            ))}*/}
+            {/*        </ul>*/}
+            {/*        <button onClick={handleDeletePlaylist}>Delete Playlist</button>*/}
+            {/*    </div>*/}
+            {/*)}*/}
+
+
             {userPlaylist && userPlaylist.length > 0 && (
-            <div>
+            <div className="playlist">
                 <h2>Your Playlist</h2>
                 <ul>
                     {userPlaylist.map((playlist, index) => (
-                        <div key={index}>
-                            <h3>{playlist.name}</h3>
-                            <ul>
+                        <div key={index} className="playlist-item">
+                            <h3 className="playlist-name">{playlist.name}</h3>
+                            <div className="playlist-tracks-container">
                                 {playlist.tracks.map((track, trackIndex) => (
-                                    <li key={trackIndex}>{track.name} - {track.artist}</li>
+                                    <div key={trackIndex} className="playlist-track">
+                                        <span className="playlist-track-name">{track.name}</span> - <span className="playlist-track-artist">{track.artist}</span>
+                                    </div>
                                 ))}
-                            </ul>
+                            </div>
                         </div>
                     ))}
                 </ul>
-                {/* Optionally, you can add a button to delete the playlist */}
-                 <button onClick={handleDeletePlaylist}>Delete Playlist</button>
+                <button onClick={handleDeletePlaylist}>Delete Playlist</button>
             </div>
         )}
 
-        {/*    {recommendedSongs.length > 0 && (*/}
-        {/*    <div>*/}
-        {/*        <h2>Recommended Songs</h2>*/}
-        {/*        {recommendedSongs.map((playlist, index) => (*/}
-        {/*            <div key={index}>*/}
-        {/*                <h3>{playlist.name}</h3>*/}
-        {/*                <ul>*/}
-        {/*                    {playlist.tracks.map((track, trackIndex) => (*/}
-        {/*                        <li key={trackIndex}>{track.name} - {track.artist}</li>*/}
-        {/*                    ))}*/}
-        {/*                </ul>*/}
-        {/*            </div>*/}
-        {/*        ))}*/}
-        {/*    </div>*/}
-        {/*)}*/}
 
-            <h2>Create New Preferences</h2>
-            <form onSubmit={handleSubmit}>
-                <input type="text" placeholder="Favorite Genre" name="favorite_genre" value={newPreference.favorite_genre} onChange={handleChange} />
-                <input type="text" placeholder="Favorite Artist" name="favorite_artist" value={newPreference.favorite_artist} onChange={handleChange} />
-                <input type="text" placeholder="Favorite Song" name="favorite_song" value={newPreference.favorite_song} onChange={handleChange} />
-                <button type="submit">Save Preferences and Generate Playlist</button>
-            </form>
+            <div className="form">
+                <h2>Create New Preferences</h2>
+                <form onSubmit={handleSubmit}>
+                    <input type="text" placeholder="Favorite Genre" name="favorite_genre"
+                           value={newPreference.favorite_genre} onChange={handleChange}/>
+                    <input type="text" placeholder="Favorite Artist" name="favorite_artist"
+                           value={newPreference.favorite_artist} onChange={handleChange}/>
+                    <input type="text" placeholder="Favorite Song" name="favorite_song"
+                           value={newPreference.favorite_song} onChange={handleChange}/>
+                    <button type="submit">Save Preferences and Generate Playlist</button>
+                </form>
+            </div>
 
             <button onClick={handleSignOut}>Sign Out</button>
         </div>

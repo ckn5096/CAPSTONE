@@ -1,0 +1,104 @@
+/* Style for the music preferences container */
+.container {
+  max-width: 600px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Style for loading message */
+.loading {
+  color: #007bff;
+}
+
+/* Style for error message */
+.error {
+  color: red;
+}
+
+/* Style for music preferences */
+.preferences {
+  margin-bottom: 20px;
+}
+
+/* Style for playlist */
+.playlist {
+  margin-top: 20px;
+}
+
+/* Style for each playlist item */
+.playlist-item {
+  margin-bottom: 20px;
+}
+
+/* Style for playlist name */
+.playlist-name {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Style for container of playlist tracks */
+.playlist-tracks-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Adjust the width of each track box */
+  grid-gap: 10px; /* Adjust the gap between track boxes */
+}
+
+/* Style for playlist tracks */
+.playlist-tracks {
+  background-color: #f0f0f0;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+
+/* Style for playlist track */
+.playlist-track {
+  margin-bottom: 5px;
+}
+
+.playlist-track:hover {
+  background-color: #0056b3;
+}
+
+/* Style for playlist track name */
+.playlist-track-name {
+  font-style: italic;
+}
+
+/* Style for playlist track artist */
+.playlist-track-artist {
+  font-weight: bold;
+}
+
+/* Style for form */
+.form {
+  margin-top: 20px;
+}
+
+/* Style for form inputs */
+.form input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+/* Style for form button */
+.form button {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.form button:hover {
+  background-color: #0056b3;
+}
