@@ -2,11 +2,15 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import MusicPreference, Playlist
-from .serializers import MusicPreferenceSerializer, PlaylistSerializer
+from .serializers import MusicPreferenceSerializer, PlaylistSerializer, ListeningHistorySerializer
 from rest_framework.permissions import BasePermission
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.authtoken.models import Token
+import requests
+from django.shortcuts import redirect
+from django.urls import reverse
+from django.conf import settings
 
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
@@ -89,7 +93,7 @@ class GeneratePlaylistView(APIView):
         except Token.DoesNotExist:
             raise AuthenticationFailed('Token is invalid or expired')
 
-        # Initialize Spotipy client with your Spotify Developer API credentials
+        # Initialize Spotipy client with Spotify Developer API credentials
         sp = spotipy.Spotify(
             client_credentials_manager=SpotifyClientCredentials(client_id='71b57beac4374097b7fa168d2f2403bd',
                                                                 client_secret='917821889f14406db3ecc8427ab7ac67'))
@@ -113,13 +117,34 @@ class GeneratePlaylistView(APIView):
         # Use user's preferences to generate recommended tracks
         recommended_tracks = sp.recommendations(seed_artists=[favorite_artist_id], limit=10)
 
-        # Extract relevant information from recommended tracks
-        recommended_songs = [{
-            'name': track['name'],
-            'artist': ', '.join([artist['name'] for artist in track['artists']]),
-            'album': track['album']['name'],
-            'uri': track['uri']
-        } for track in recommended_tracks['tracks']]
+        # # Extract relevant information from recommended tracks
+        # recommended_songs = [{
+        #     'name': track['name'],
+        #     'artist': ', '.join([artist['name'] for artist in track['artists']]),
+        #     'album': track['album']['name'],
+        #     'uri': track['uri']
+        # } for track in recommended_tracks['tracks']]
+
+        # Extract relevant information from recommended tracks, including song art URLs
+        recommended_songs = []
+        for track in recommended_tracks['tracks']:
+            # Extract song art URLs
+            album_art_urls = [image['url'] for image in track['album']['images']]
+            # Extract track ID from the URI
+            track_id = track['uri'].split(':')[-1]
+            # Construct Spotify track URL
+            spotify_track_url = f"https://open.spotify.com/track/{track_id}"
+            # Append track data with song art URLs
+            recommended_songs.append({
+                'name': track['name'],
+                'artist': ', '.join([artist['name'] for artist in track['artists']]),
+                'album': track['album']['name'],
+                'uri': track['uri'],
+                'album_art_urls': album_art_urls,  # Include song art URLs in the data
+                'track_id': track_id,  # Include track ID in the data
+                'spotify_track_url': spotify_track_url  # Include Spotify track URL in the data
+
+            })
 
         # Save the generated playlist to the database with the user
         playlist_data = {
@@ -148,6 +173,7 @@ class UserPlaylistsView(APIView):
             playlist_data = {
                 'name': playlist.name,
                 'tracks': playlist.tracks,
+                # 'song_art_urls': playlist.song_art_url,  # Include song art URLs in response
                 # Add other fields as needed
             }
             playlists_data.append(playlist_data)
@@ -159,3 +185,75 @@ class UserPlaylistsView(APIView):
         playlist_user = Playlist.objects.get(user=request.user)
         playlist_user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class ListeningHistoryView(APIView):
+    permission_classes = [IsTokenAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
+    def get(self, request):
+        # Get user's Spotify listening history
+        sp = spotipy.Spotify(auth=request.user.spotify_access_token)  # Assuming you have stored Spotify access token for the user
+        listening_history = sp.current_user_recently_played(limit=10)  # Fetch the last 10 tracks from the user's listening history
+
+        # Extract relevant information from listening history
+        tracks_data = []
+        for item in listening_history['items']:
+            track_data = {
+                'track_name': item['track']['name'],
+                'artist_name': ', '.join([artist['name'] for artist in item['track']['artists']]),
+                'album_name': item['track']['album']['name'],
+                'uri': item['track']['uri'],
+                'played_at': item['played_at']
+            }
+            tracks_data.append(track_data)
+
+        # Save the listening history to the database
+        listening_history_serializer = ListeningHistorySerializer(data=tracks_data, many=True)
+        if listening_history_serializer.is_valid():
+            listening_history_serializer.save(user=request.user)
+            return Response(listening_history_serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(listening_history_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SpotifyLoginView(APIView):
+    def get(self, request):
+        # Define Spotify OAuth parameters
+        client_id = settings.SPOTIFY_CLIENT_ID
+        redirect_uri = request.build_absolute_uri(reverse('spotify_callback'))
+        scope = 'user-read-private user-read-email'  # Specify required scopes
+
+        # Construct Spotify authorization URL
+        auth_url = f'https://accounts.spotify.com/authorize?client_id={client_id}&response_type=code&redirect_uri={redirect_uri}&scope={scope}'
+
+        # Redirect user to Spotify authorization page
+        return redirect(auth_url)
+
+class SpotifyCallbackView(APIView):
+    def get(self, request):
+        # Get authorization code from callback URL
+        code = request.GET.get('code')
+
+        # Exchange authorization code for access token
+        access_token_url = 'https://accounts.spotify.com/api/token'
+        client_id = settings.SPOTIFY_CLIENT_ID
+        client_secret = settings.SPOTIFY_CLIENT_SECRET
+        redirect_uri = request.build_absolute_uri(reverse('spotify_callback'))
+
+        data = {
+            'grant_type': 'authorization_code',
+            'code': code,
+            'redirect_uri': redirect_uri,
+            'client_id': client_id,
+            'client_secret': client_secret,
+        }
+
+        response = requests.post(access_token_url, data=data)
+        token_data = response.json()
+
+        # Store access token in session or database
+        access_token = token_data['access_token']
+        request.session['spotify_access_token'] = access_token
+
+        # Redirect user to a success page or dashboard
+        return redirect('dashboard')

@@ -22,16 +22,27 @@ class Playlist(models.Model):
     name = models.CharField(max_length=100)
     tracks = models.JSONField()  # Store track data as JSON
 
+
     def __str__(self):
         return f"Playlist '{self.name}' for {self.user.username}"
 
 
-
-# class Playlist(models.Model):
+# class ListeningHistory(models.Model):
 #     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-#     name = models.CharField(max_length=100)
-#     tracks = models.JSONField()  # Store track data as JSON
+#     track_name = models.CharField(max_length=255)
+#     artist_name = models.CharField(max_length=255)
+#     album_name = models.CharField(max_length=255)
+#     uri = models.CharField(max_length=255)
+#     played_at = models.DateTimeField()
 #
 #     def __str__(self):
-#         return f"Playlist '{self.name}' for {self.user.username}"
+#         return f"{self.track_name} - {self.artist_name} ({self.played_at})"
+
+class ListeningHistory(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    tracks = models.JSONField()  # Store listening history as JSON
+    played_at = models.DateTimeField(auto_now_add=True)  # Timestamp of when the track was played
+
+    def __str__(self):
+        return f"Listening History for {self.user.username} ({self.played_at})"
 
