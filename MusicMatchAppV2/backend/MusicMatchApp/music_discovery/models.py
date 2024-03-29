@@ -44,5 +44,5 @@ class ListeningHistory(models.Model):
     played_at = models.DateTimeField(auto_now_add=True)  # Timestamp of when the track was played
 
     def __str__(self):
-        return f"Listening History for {self.user.username} ({self.played_at})"
+        return f"Listening History for {self.user.username} ({self.played_at})" 
 

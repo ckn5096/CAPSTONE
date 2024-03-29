@@ -145,7 +145,8 @@ REST_FRAMEWORK = {
        # 'rest_framework_simplejwt.authentication.JWTAuthentication'
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
+        # 'rest_framework.permissions.IsAuthenticated',
     ],
 }
 
@@ -172,4 +173,8 @@ PASSWORD_HASHERS = [
 
 AUTH_TOKEN_EXPIRATION_DAYS = 7
 
+SPOTIFY_CLIENT_ID = 'c1c7189eb93c407ba8a6ab1defe412b3'
+SPOTIFY_CLIENT_SECRET = 'b0eccbff8f5f48a9a109b64994555ee2'
+
+CORS_ALLOW_ALL_ORIGINS = True
 

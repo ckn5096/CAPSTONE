@@ -104,7 +104,7 @@ function App() {
       />
 
 
-      <h1>Welcome to Music Match</h1>
+      <h1>Welcome to MelodyMatch</h1>
       <p>Discover and enjoy your favorite music</p>
       <p>Register now to create playlists, explore music preferences, and more</p>
       <Link to="/Registration" className="link">

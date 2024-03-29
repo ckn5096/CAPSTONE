@@ -71,9 +71,14 @@ const AuthProvider = ({ children }) => {
         localStorage.removeItem('authToken');
     };
 
+    // Add setStoredToken here
+    const setStoredToken = (token) => {
+        setAuthToken(token);
+    };
+
 
     return (
-        <AuthContext.Provider value={{ authToken, login, logout }}>
+        <AuthContext.Provider value={{ authToken, login, logout , setStoredToken }}>
             {children}
         </AuthContext.Provider>
     );

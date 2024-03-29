@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import './Home.css'; // Import custom CSS for styling
 import musicLogo from '/Users/abimbolaoyewole/Desktop/MusicMatchAppV2/frontend/gui/src/Images/musicLogo.png';
 import userLogo from '/Users/abimbolaoyewole/Desktop/MusicMatchAppV2/frontend/gui/src/Images/userLogo.png';
+import HistoryLogo from '/Users/abimbolaoyewole/Desktop/MusicMatchAppV2/frontend/gui/src/Images/HistoryLogo.png';
 
 const Home = () => {
     const [message, setMessage] = useState('');
@@ -25,6 +26,10 @@ const Home = () => {
 
     const goToMusicPreferences = () => {
         navigate('/MusicPreference'); // Navigate to the music preferences page
+    };
+
+     const goToListeningHistory = () => {
+        navigate('/ListeningHistory'); // Navigate to the music preferences page
     };
 
     useEffect(() => {
@@ -79,6 +84,16 @@ const Home = () => {
                     <h2>Discover New Music</h2>
                     <p>Explore recommendations based on your preferences</p>
                     <button className="action-button" onClick={goToMusicPreferences}>Go to Discover</button>
+                </div>
+            </div>
+
+            {/* Container for Listening History button */}
+            <div className="action-container">
+                <div className="action-content">
+                    <img src={HistoryLogo} alt="Icon" className="action-icon" />
+                    <h2>Listening History</h2>
+                    <p>View your listening history and analytics</p>
+                    <button className="action-button" onClick={goToListeningHistory}>Go to Listening History</button>
                 </div>
             </div>
 

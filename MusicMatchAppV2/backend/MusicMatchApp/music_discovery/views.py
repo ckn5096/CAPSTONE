@@ -11,8 +11,10 @@ import requests
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.conf import settings
+from datetime import datetime, timedelta
 
 import spotipy
+from spotipy import Spotify
 from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
 
 
@@ -186,50 +188,173 @@ class UserPlaylistsView(APIView):
         playlist_user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+
+# class ListeningHistoryView(APIView):
+#     permission_classes = [IsTokenAuthenticated]
+#     authentication_classes = [TokenAuthentication]
+#
+#     def get(self, request):
+#         # Get user object
+#         user = request.user
+#
+#         # Get access token from user's session
+#         # access_token = request.session.get('spotify_access_token')
+#         access_token = 'BQDeAH36KeqSXw_rXeCJO9fijnlVgNarJizwrLRfpZuu27uN32LMA59SoshfdS7iOkwxyiA4Welr7jqXnPS0MFsfpFSPvlh59TIMkAMIJ_f8fIBrHu3dWwPNnLZq4zNrLlVLbI9_5cHbtRhkq7vZYd6qWuy0e20-nVWWM09R4KcmDQnSOu0pDhP68eTO5HzqDK0WhNLEzQZyW_RFzmksdVPx'
+#
+#         if access_token:
+#             # Initialize Spotify client with the access token
+#             sp = Spotify(auth=access_token)
+#
+#             # Fetch the user's listening history
+#             listening_history = sp.current_user_recently_played(limit=15)
+#
+#             # Extract relevant information from listening history
+#             tracks_data = []
+#             for item in listening_history['items']:
+#                 track_data = {
+#                     'track_name': item['track']['name'],
+#                     'artist_name': ', '.join([artist['name'] for artist in item['track']['artists']]),
+#                     'album_name': item['track']['album']['name'],
+#                     'uri': item['track']['uri'],
+#                     'played_at': item['played_at']
+#                 }
+#                 tracks_data.append(track_data)
+#
+#                 # Create instances of ListeningHistorySerializer with provided data
+#             listening_history_data = {
+#                     'user': request.user.id,  # Assuming user is authenticated and user id is accessible
+#                     'tracks': tracks_data
+#                 }
+#
+#             listening_history_serializer = ListeningHistorySerializer(data=listening_history_data)
+#             if listening_history_serializer.is_valid():
+#                 listening_history_serializer.save()
+#                 return Response(listening_history_serializer.data, status=status.HTTP_200_OK)
+#             else:
+#                 return Response(listening_history_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class ListeningHistoryView(APIView):
     permission_classes = [IsTokenAuthenticated]
     authentication_classes = [TokenAuthentication]
 
+    def get_access_token(self, request):
+        # Check if access token is present and not expired
+        access_token = request.query_params.get('access_token')
+        token_expiry = request.query_params.get('token_expiry')
+
+        if access_token and token_expiry:
+            expiry_time = datetime.fromisoformat(token_expiry)
+            if expiry_time > datetime.now() + timedelta(minutes=5):  # Refresh token 5 minutes before expiry
+                return access_token
+
+        # If access token is expired or not present, return None
+        return None
+
     def get(self, request):
-        # Get user's Spotify listening history
-        sp = spotipy.Spotify(auth=request.user.spotify_access_token)  # Assuming you have stored Spotify access token for the user
-        listening_history = sp.current_user_recently_played(limit=10)  # Fetch the last 10 tracks from the user's listening history
+        # Get user object
+        user = request.user
 
-        # Extract relevant information from listening history
-        tracks_data = []
-        for item in listening_history['items']:
-            track_data = {
-                'track_name': item['track']['name'],
-                'artist_name': ', '.join([artist['name'] for artist in item['track']['artists']]),
-                'album_name': item['track']['album']['name'],
-                'uri': item['track']['uri'],
-                'played_at': item['played_at']
+        # Get access token from local storage or query parameters
+        access_token = self.get_access_token(request)
+
+        print('Access token:', access_token)
+
+        if access_token:
+            # Initialize Spotify client with the access token
+            sp = Spotify(auth=access_token)
+
+            # Fetch the user's listening history
+            listening_history = sp.current_user_recently_played(limit=15)
+
+            # Extract relevant information from listening history
+            tracks_data = []
+            for item in listening_history['items']:
+                track_data = {
+                    'track_name': item['track']['name'],
+                    'artist_name': ', '.join([artist['name'] for artist in item['track']['artists']]),
+                    'album_name': item['track']['album']['name'],
+                    'uri': item['track']['uri'],
+                    'played_at': item['played_at']
+                }
+                tracks_data.append(track_data)
+
+                # Create instances of ListeningHistorySerializer with provided data
+            listening_history_data = {
+                    'user': request.user.id,  # Assuming user is authenticated and user id is accessible
+                    'tracks': tracks_data
+                }
+
+            # Return the data to the frontend along with the access token and its expiry
+            response_data = {
+                'access_token': access_token,
+                'token_expiry': (datetime.now() + timedelta(days=1)).isoformat(),  # Example expiry time (1 day)
+                'tracks': tracks_data
             }
-            tracks_data.append(track_data)
 
-        # Save the listening history to the database
-        listening_history_serializer = ListeningHistorySerializer(data=tracks_data, many=True)
+            listening_history_serializer = ListeningHistorySerializer(data=listening_history_data)
+
         if listening_history_serializer.is_valid():
-            listening_history_serializer.save(user=request.user)
-            return Response(listening_history_serializer.data, status=status.HTTP_200_OK)
+            listening_history_serializer.save()
+            return Response(response_data, status=status.HTTP_200_OK)
         else:
-            return Response(listening_history_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            # If access token is not valid, return an error response
+            return Response({'error': 'Invalid access token'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class SpotifyLoginView(APIView):
+    authentication_classes = []
+
     def get(self, request):
         # Define Spotify OAuth parameters
         client_id = settings.SPOTIFY_CLIENT_ID
         redirect_uri = request.build_absolute_uri(reverse('spotify_callback'))
-        scope = 'user-read-private user-read-email'  # Specify required scopes
+        scope = 'user-read-private user-read-email user-read-recently-played'  # Include the user-read-recently-played scope
 
         # Construct Spotify authorization URL
         auth_url = f'https://accounts.spotify.com/authorize?client_id={client_id}&response_type=code&redirect_uri={redirect_uri}&scope={scope}'
 
         # Redirect user to Spotify authorization page
-        return redirect(auth_url)
+        return Response({'auth_url': auth_url})
+        # return redirect(auth_url)
+
+# class SpotifyCallbackView(APIView):
+#
+#     def get(self, request):
+#         # Get authorization code from callback URL
+#         code = request.GET.get('code')
+#
+#         # Exchange authorization code for access token
+#         access_token_url = 'https://accounts.spotify.com/api/token'
+#         client_id = settings.SPOTIFY_CLIENT_ID
+#         client_secret = settings.SPOTIFY_CLIENT_SECRET
+#         redirect_uri = request.build_absolute_uri(reverse('spotify_callback'))
+#
+#         data = {
+#             'grant_type': 'authorization_code',
+#             'code': code,
+#             'redirect_uri': redirect_uri,
+#             'client_id': client_id,
+#             'client_secret': client_secret,
+#         }
+#
+#         response = requests.post(access_token_url, data=data)
+#         token_data = response.json()
+#
+#         # Store access token in session or database
+#         access_token = token_data['access_token']
+#         request.session['spotify_access_token'] = access_token
+#
+#         print("code: " , code)
+#         print("Access Token : " , access_token)
+#
+#         # Redirect user to a success page or dashboard
+#         return redirect('http://localhost:3000/home/')
+
 
 class SpotifyCallbackView(APIView):
+
     def get(self, request):
         # Get authorization code from callback URL
         code = request.GET.get('code')
@@ -251,9 +376,10 @@ class SpotifyCallbackView(APIView):
         response = requests.post(access_token_url, data=data)
         token_data = response.json()
 
-        # Store access token in session or database
+        # Store access token in local storage and include it in the redirection URL
         access_token = token_data['access_token']
-        request.session['spotify_access_token'] = access_token
+        token_expiry = (datetime.now() + timedelta(hours=1)).isoformat()  # Example expiry time (1 day)
+        # redirect_url = f'http://localhost:3000/home/?access_token={access_token}&token_expiry={token_expiry}'
+        redirect_url = f'http://localhost:3000/ListeningHistory/?access_token={access_token}&token_expiry={token_expiry}'
 
-        # Redirect user to a success page or dashboard
-        return redirect('dashboard')
+        return redirect(redirect_url)

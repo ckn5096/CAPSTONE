@@ -28,6 +28,7 @@ import Home from "./components/Home";
 import { AuthProvider } from './components/AuthContext';
 import ProfileUpdate from "./components/ProfileUpdate";
 import MusicPreference from "./components/MusicPreference";
+import ListeningHistory from "./components/ListeningHistory";
 
 ReactDOM.render(
   <React.StrictMode>
@@ -40,6 +41,7 @@ ReactDOM.render(
           <Route path="/home" element={<Home />} />
           <Route path="/profile/update" element={ <ProfileUpdate />} />
           <Route path="/MusicPreference" element={ <MusicPreference />} />
+           <Route path="/ListeningHistory" element={ <ListeningHistory />} />
       </Routes>
         </AuthProvider>
     </Router>

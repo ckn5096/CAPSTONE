@@ -13,7 +13,7 @@ class RegistrationViewTest(TestCase):
         data = {'first_name': 'John', 'last_name': 'Doe', 'email': 'john@example.com', 'username': 'johndoe', 'password': 'password123'}
         response = self.client.post(url, data=data)
         self.assertEqual(response.status_code, 201)
-        # Add more assertions as needed
+
 
 
 class LoginViewTest(TestCase):
@@ -26,4 +26,4 @@ class LoginViewTest(TestCase):
         data = {'username': 'testuser', 'password': 'password123'}
         response = self.client.post(url, data=data)
         self.assertEqual(response.status_code, 200)
-        # Add more assertions as needed
+
